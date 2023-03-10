@@ -1,14 +1,15 @@
 const express = require("express");
 require("express-async-errors");
+
+const cors = require("./app/middlewares/cors");
+const errorHandler = require("./app/middlewares/errorHandler");
 const routes = require("./routes");
 
 const app = express();
 
 app.use(express.json());
+app.use(cors);
 app.use(routes);
-app.use((error, _req, res, _next) => {
-  console.log(error);
-  res.sendStatus(500);
-});
+app.use(errorHandler);
 
 app.listen(4000, () => console.log("rodando porta 4000"));
