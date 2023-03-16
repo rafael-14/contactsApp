@@ -4,6 +4,7 @@ import arrow from '../../assets/images/icons/arrow.svg';
 import edit from '../../assets/images/icons/edit.svg';
 import trash from '../../assets/images/icons/trash.svg';
 import Loader from '../../components/Loader';
+import ContactsService from '../../services/ContactsService';
 // import Modal from '../../components/Modal';
 import {
   Card,
@@ -33,13 +34,10 @@ export default function Home() {
 
   useEffect(() => {
     async function loadContacts() {
-      setIsLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:4000/contacts?orderBy=${orderBy}`,
-        );
-        const json = await response.json();
-        setContacts(json);
+        setIsLoading(true);
+        const contactsList = await ContactsService.listContacts(orderBy);
+        setContacts(contactsList);
       } catch (err) {
         console.log('error', err);
       } finally {

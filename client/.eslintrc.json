@@ -23,6 +23,7 @@
       "import/no-named-as-default": 0,
       "import/no-named-as-default-member": 0,
       "import/prefer-default-export": "off",
-      "react/jsx-no-bind": "off"
+      "react/jsx-no-bind": "off",
+      "class-methods-use-this": 0
     }
 }
