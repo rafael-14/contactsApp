@@ -1,47 +1,96 @@
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import arrow from '../../assets/images/icons/arrow.svg';
 import edit from '../../assets/images/icons/edit.svg';
 import trash from '../../assets/images/icons/trash.svg';
-// import Loader from '../../components/Loader';
+import Loader from '../../components/Loader';
 // import Modal from '../../components/Modal';
 import {
   Card,
   Container,
   Header,
   InputSearchContainer,
-  ListContainer,
+  ListHeader,
 } from './styles';
 
 export default function Home() {
+  const [contacts, setContacts] = useState([]);
+  const [orderBy, setOrderBy] = useState('asc');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const filteredContacts = useMemo(() => contacts.filter((contact) => (
+    contact.name.toUpperCase().includes(searchTerm.toUpperCase())
+  )), [contacts, searchTerm]);
+
+  function handleToggleOrderBy() {
+    setOrderBy((prevState) => (prevState === 'asc' ? 'desc' : 'asc'));
+  }
+
+  function handleChangeSearchTerm(e) {
+    setSearchTerm(e.target.value);
+  }
+
+  useEffect(() => {
+    async function loadContacts() {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:4000/contacts?orderBy=${orderBy}`,
+        );
+        const json = await response.json();
+        setContacts(json);
+      } catch (err) {
+        console.log('error', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadContacts();
+  }, [orderBy]);
+
   return (
     <Container>
-      {/* <Loader />
-       <Modal danger /> */}
+      <Loader isLoading={isLoading} />
+      {/* <Modal danger /> */}
       <InputSearchContainer>
-        <input type="text" placeholder="Pesquisar contato:" />
+        <input
+          value={searchTerm}
+          type="text"
+          placeholder="Pesquisar contato:"
+          onChange={handleChangeSearchTerm}
+        />
       </InputSearchContainer>
+
       <Header>
-        <strong>X contatos</strong>
+        <strong>
+          {filteredContacts.length}
+          {filteredContacts.length === 1 ? ' contato' : ' contatos'}
+        </strong>
         <Link to="/new">Novo contato</Link>
       </Header>
-      <ListContainer>
-        <header>
-          <button type="button">
+
+      {filteredContacts.length > 0 && (
+        <ListHeader orderBy={orderBy}>
+          <button type="button" onClick={handleToggleOrderBy}>
             <span>Nome</span>
             <img src={arrow} alt="Arrow" />
           </button>
-        </header>
-        <Card>
+        </ListHeader>
+      )}
+
+      {filteredContacts.map((contact) => (
+        <Card key={contact.id}>
           <div className="info">
             <div className="contact-name">
-              <strong>Nome contato</strong>
-              <small>category</small>
+              <strong>{contact.name}</strong>
+              {contact.category_name && <small>{contact.category_name}</small>}
             </div>
-            <span>email@.com</span>
-            <span>33227070</span>
+            <span>{contact.email}</span>
+            <span>{contact.phone}</span>
           </div>
           <div className="actions">
-            <Link to="/edit/123">
+            <Link to={`/edit/${contact.id}`}>
               <img src={edit} alt="Edit" />
             </Link>
             <button type="button">
@@ -49,7 +98,7 @@ export default function Home() {
             </button>
           </div>
         </Card>
-      </ListContainer>
+      ))}
     </Container>
   );
 }
