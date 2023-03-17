@@ -10,7 +10,7 @@ class CategoryController {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: "Name is required" });
     const category = await CategoriesRepository.create({ name });
-    res.json(category);
+    res.status(201).json(category);
   }
 }
 
