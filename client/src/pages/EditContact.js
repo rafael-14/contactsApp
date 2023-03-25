@@ -1,14 +1,15 @@
-import { useParams, useHistory } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import PageHeader from '../../components/PageHeader';
-import ContactForm from '../../components/ContactForm';
-import ContactsService from '../../services/ContactsService';
-import Loader from '../../components/Loader';
-import toast from '../../utils/toast';
+import { useEffect, useRef } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
+import ContactForm from '../components/ContactForm';
+import Loader from '../components/Loader';
+import PageHeader from '../components/PageHeader';
+import useSafeAsyncState from '../hooks/useSafeAsyncState';
+import ContactsService from '../services/ContactsService';
+import toast from '../utils/toast';
 
 export default function EditContact() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [contactName, setContactName] = useState('');
+  const [isLoading, setIsLoading] = useSafeAsyncState(true);
+  const [contactName, setContactName] = useSafeAsyncState('');
   const contactFormRef = useRef(null);
   const { id } = useParams();
   const history = useHistory();
@@ -51,7 +52,9 @@ export default function EditContact() {
     <>
       <Loader isLoading={isLoading} />
 
-      <PageHeader title={isLoading ? 'Carregando...' : `Editar ${contactName}`} />
+      <PageHeader
+        title={isLoading ? 'Carregando...' : `Editar ${contactName}`}
+      />
       <ContactForm
         ref={contactFormRef}
         buttonLabel="Salvar alterações"

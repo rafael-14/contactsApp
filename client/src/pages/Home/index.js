@@ -23,13 +23,14 @@ import {
   SearchNotFoundContainer,
 } from './styles';
 import toast from '../../utils/toast';
+import useSafeAsyncState from '../../hooks/useSafeAsyncState';
 
 export default function Home() {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useSafeAsyncState([]);
   const [orderBy, setOrderBy] = useState('asc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useSafeAsyncState(true);
+  const [hasError, setHasError] = useSafeAsyncState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [contactBeingDeleted, setContactBeingDeleted] = useState(null);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
