@@ -20,6 +20,14 @@ class HttpClient {
     });
   }
 
+  put(path, options) {
+    return this.makeRequest(path, {
+      method: 'PUT',
+      body: options?.body,
+      headers: options?.headers,
+    });
+  }
+
   async makeRequest(path, options) {
     const headers = new Headers();
     if (options?.body) headers.append('Content-Type', 'application/json');
