@@ -1,14 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import ContactForm from '../components/ContactForm';
-import Loader from '../components/Loader';
-import PageHeader from '../components/PageHeader';
-import useSafeAsyncState from '../hooks/useSafeAsyncState';
-import useSafeAsyncAction from '../hooks/useSafeAsyncAction';
-import ContactsService from '../services/ContactsService';
-import toast from '../utils/toast';
+import useSafeAsyncState from '../../hooks/useSafeAsyncState';
+import useSafeAsyncAction from '../../hooks/useSafeAsyncAction';
+import ContactsService from '../../services/ContactsService';
+import toast from '../../utils/toast';
 
-export default function EditContact() {
+export default function useEditContact() {
   const [isLoading, setIsLoading] = useSafeAsyncState(true);
   const [contactName, setContactName] = useSafeAsyncState('');
   const contactFormRef = useRef(null);
@@ -48,18 +45,10 @@ export default function EditContact() {
     loadContact();
   }, [id]);
 
-  return (
-    <>
-      <Loader isLoading={isLoading} />
-
-      <PageHeader
-        title={isLoading ? 'Carregando...' : `Editar ${contactName}`}
-      />
-      <ContactForm
-        ref={contactFormRef}
-        buttonLabel="Salvar alterações"
-        onSubmit={handleSubmit}
-      />
-    </>
-  );
+  return {
+    isLoading,
+    contactName,
+    contactFormRef,
+    handleSubmit,
+  };
 }
