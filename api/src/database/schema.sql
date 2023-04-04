@@ -1,5 +1,5 @@
 CREATE DATABASE mycontacts;
---\c mycontacts
+\c mycontacts
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS categories (
