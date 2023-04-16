@@ -26,16 +26,19 @@ export default function useEditContact() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function loadContact() {
       try {
-        const contact = await ContactsService.getContactById(id);
+        const contact = await ContactsService.getContactById(id, controller.signal);
 
         safeAsyncAction(() => {
           contactFormRef.current.setFieldsValues(contact);
           setIsLoading(false);
           setContactName(contact.name);
         });
-      } catch {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
         safeAsyncAction(() => {
           history.push('/');
           toast('danger', 'Contato não encontrado.');
@@ -43,6 +46,8 @@ export default function useEditContact() {
       }
     }
     loadContact();
+
+    return () => controller.abort();
   }, [id]);
 
   return {

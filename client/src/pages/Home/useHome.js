@@ -1,9 +1,13 @@
 import {
-  useEffect, useMemo, useState, useCallback,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
 } from 'react';
+import useSafeAsyncState from '../../hooks/useSafeAsyncState';
 import ContactsService from '../../services/ContactsService';
 import toast from '../../utils/toast';
-import useSafeAsyncState from '../../hooks/useSafeAsyncState';
 
 export default function useHome() {
   const [contacts, setContacts] = useSafeAsyncState([]);
@@ -15,17 +19,20 @@ export default function useHome() {
   const [contactBeingDeleted, setContactBeingDeleted] = useState(null);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
-  const filteredContacts = useMemo(() => contacts.filter((contact) => (
-    contact.name.toUpperCase().includes(searchTerm.toUpperCase())
-  )), [contacts, searchTerm]);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
-  const loadContacts = useCallback(async () => {
+  const filteredContacts = useMemo(() => contacts.filter((contact) => (
+    contact.name.toUpperCase().includes(deferredSearchTerm.toUpperCase())
+  )), [contacts, deferredSearchTerm]);
+
+  const loadContacts = useCallback(async (signal) => {
     try {
       setIsLoading(true);
-      const contactsList = await ContactsService.listContacts(orderBy);
+      const contactsList = await ContactsService.listContacts(orderBy, signal);
       setContacts(contactsList);
       setHasError(false);
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
       setHasError(true);
       setContacts([]);
     } finally {
@@ -33,9 +40,9 @@ export default function useHome() {
     }
   }, [orderBy]);
 
-  function handleToggleOrderBy() {
+  const handleToggleOrderBy = useCallback(() => {
     setOrderBy((prevState) => (prevState === 'asc' ? 'desc' : 'asc'));
-  }
+  }, []);
 
   function handleChangeSearchTerm(e) {
     setSearchTerm(e.target.value);
@@ -45,10 +52,10 @@ export default function useHome() {
     loadContacts();
   }
 
-  function handleDeleteContact(contact) {
+  const handleDeleteContact = useCallback((contact) => {
     setContactBeingDeleted(contact);
     setIsDeleteModalVisible(true);
-  }
+  }, []);
 
   function handleCloseDeleteModal() {
     setIsDeleteModalVisible(false);
@@ -58,7 +65,6 @@ export default function useHome() {
     try {
       setIsLoadingDelete(true);
       await ContactsService.deleteContact(contactBeingDeleted.id);
-
       setContacts((prevState) => prevState.filter((contact) => (
         contact.id !== contactBeingDeleted.id
       )));
@@ -74,7 +80,11 @@ export default function useHome() {
   }
 
   useEffect(() => {
-    loadContacts();
+    const controller = new AbortController();
+
+    loadContacts(controller.signal);
+
+    return () => controller.abort();
   }, [loadContacts]);
 
   return {
